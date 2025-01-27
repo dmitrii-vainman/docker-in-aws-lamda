@@ -1,28 +1,35 @@
-const axios = require('axios');
-
 exports.handler = async (event) => {
-const envVar = process.env.MY_ENV_VAR || "Default Value";
-  try {
-    // Sende eine GET-Anfrage an die GitHub-API
-    const response = await axios.get('https://api.github.com');
+    try {
+        // Request-Body parsen
+        const body = JSON.parse(event.body || '{}');
 
-    // Rückgabe der API-Antwort
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "API request successful!",
-        envVar: envVar, // Gibt den Wert der Umgebungsvariablen zurück
-        data: response.data, // Antwortdaten der API
-      }),
-    };
-  } catch (error) {
-    // Fehlerbehandlung
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "API request failed.",
-        error: error.message,
-      }),
-    };
-  }
+        // Validierung: Überprüfen, ob "name" vorhanden ist
+        if (!body.name) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ 
+                    message: "Validation Error: 'name' parameter is required" 
+                }),
+            };
+        }
+
+        // Erfolgsantwort
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ 
+                message: `Hello, ${body.name}!` 
+            }),
+        };
+    } catch (error) {
+        // Fehlerbehandlung
+        console.error("Error occurred:", error);
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ 
+                message: "Internal Server Error", 
+                error: error.message 
+            }),
+        };
+    }
 };
